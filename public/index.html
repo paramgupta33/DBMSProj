@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>KalaSetu Marketplace Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen font-sans pb-10 bg-fixed bg-cover bg-center" style="background-image: url('https://sarmaya.in/museum/wp-content/uploads/2025/06/2016_62_1_original_1-scaled.jpg');">
+    <!-- Top Bar -->
+    <header class="bg-gray-200/90 backdrop-blur border-b border-gray-400 px-6 h-14 flex items-center justify-between sticky top-0 z-10">
+        <h1 class="text-xl font-bold text-black">KalaSetu</h1>
+        <div class="flex gap-2">
+            <button onclick="showSection('artisan-sec')" class="px-3 py-1 text-xs border border-gray-500 bg-gray-300 font-semibold hover:bg-gray-400">Artisan Portal</button>
+            <button onclick="showSection('buyer-sec')" class="px-3 py-1 text-xs border border-gray-500 bg-gray-300 font-semibold hover:bg-gray-400">Buyer Storefront</button>
+        </div>
+    </header>
+
+    <main class="max-w-xl mx-auto px-4 py-6">
+        <!-- ARTISAN SECTION -->
+        <div id="artisan-sec" class="flex flex-col gap-4">
+            <div class="bg-white/95 p-3 border border-gray-400 flex items-center justify-between shadow-md">
+                <span class="text-xs font-bold">Active Artisan: <span id="dash-name" class="font-normal text-gray-700">--</span></span>
+                <div class="flex items-center gap-1 text-xs">
+                    <label class="font-bold">Select Artisan:</label>
+                    <select id="select-artisan" onchange="loadArtisanData()" class="bg-white border border-gray-400 px-1 py-0.5 text-xs"></select>
+                </div>
+            </div>
+
+            <div class="bg-white/95 p-4 border border-gray-400 shadow-md">
+                <h3 class="text-sm font-bold border-b pb-1 mb-2">Register Artisan</h3>
+                <div class="flex flex-col gap-2">
+                    <input id="a-name" placeholder="Full Name" class="border border-gray-400 p-1 text-xs"/>
+                    <input id="a-email" placeholder="Email" class="border border-gray-400 p-1 text-xs"/>
+                    <input id="a-phone" placeholder="Phone Number" class="border border-gray-400 p-1 text-xs"/>
+                    <button onclick="addArtisan()" class="bg-gray-700 text-white text-xs py-1 hover:bg-black">Save Artisan</button>
+                </div>
+            </div>
+
+            <div class="bg-white/95 p-4 border border-gray-400 shadow-md">
+                <h3 class="text-sm font-bold border-b pb-1 mb-2">Add Product</h3>
+                <div class="flex flex-col gap-2">
+                    <input id="p-name" placeholder="Product Title" class="border border-gray-400 p-1 text-xs"/>
+                    <input id="p-desc" placeholder="Product Description" class="border border-gray-400 p-1 text-xs"/>
+                    <input id="p-price" type="number" placeholder="Price (₹)" class="border border-gray-400 p-1 text-xs"/>
+                    <input id="p-stock" type="number" placeholder="Stock Qty" class="border border-gray-400 p-1 text-xs"/>
+                    <button onclick="addProduct()" class="bg-blue-800 text-white text-xs py-1 hover:bg-blue-900">Publish Product</button>
+                </div>
+            </div>
+
+            <div class="bg-white/95 p-4 border border-gray-400 shadow-md flex flex-col">
+                <h3 class="text-sm font-bold border-b pb-1 mb-2">Recent Orders</h3>
+                <ul id="artisan-orders" class="flex flex-col gap-2 text-xs divide-y divide-gray-300"></ul>
+            </div>
+        </div>
+
+        <!-- BUYER SECTION -->
+        <div id="buyer-sec" class="hidden flex-col gap-4">
+            <div class="bg-white/95 border border-gray-400 p-3 flex justify-between items-center shadow-md">
+                <div>
+                    <h2 class="text-base font-bold">Buyer Storefront</h2>
+                    <p class="text-xs text-gray-600">Browse and purchase products.</p>
+                </div>
+                <div class="flex items-center gap-1 text-xs">
+                    <label class="font-bold">Select Buyer:</label>
+                    <select id="select-buyer" onchange="loadBuyerData()" class="bg-white border border-gray-400 px-1 py-0.5 text-xs"></select>
+                </div>
+            </div>
+
+            <div class="bg-white/95 p-4 border border-gray-400 shadow-md flex flex-col gap-2">
+                <h3 class="text-sm font-bold border-b pb-1">Register Buyer</h3>
+                <input id="b-name" placeholder="Full Name" class="border border-gray-400 p-1 text-xs"/>
+                <input id="b-email" placeholder="Email" class="border border-gray-400 p-1 text-xs"/>
+                <input id="b-phone" placeholder="Phone Number" class="border border-gray-400 p-1 text-xs"/>
+                <button onclick="addBuyer()" class="bg-gray-700 text-white text-xs py-1 hover:bg-black">Save Buyer</button>
+            </div>
+
+            <div class="bg-white/95 p-4 border border-gray-400 shadow-md">
+                <h3 class="text-sm font-bold border-b pb-1 mb-2">My Placed Orders</h3>
+                <ul id="buyer-orders" class="flex flex-col gap-2 text-xs divide-y divide-gray-300"></ul>
+            </div>
+
+            <div class="bg-white/95 p-4 border border-gray-400 shadow-md">
+                <h3 class="text-base font-bold mb-2">Available Products</h3>
+                <div id="product-list" class="flex flex-col gap-3"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+        const aName = document.getElementById('a-name'), aEmail = document.getElementById('a-email'), aPhone = document.getElementById('a-phone');
+        const bName = document.getElementById('b-name'), bEmail = document.getElementById('b-email'), bPhone = document.getElementById('b-phone');
+        const pName = document.getElementById('p-name'), pDesc = document.getElementById('p-desc'), pPrice = document.getElementById('p-price'), pStock = document.getElementById('p-stock');
+
+        function showSection(id) {
+            document.getElementById('artisan-sec').classList.toggle('hidden', id !== 'artisan-sec');
+            document.getElementById('buyer-sec').classList.toggle('hidden', id !== 'buyer-sec');
+            if (id === 'buyer-sec') loadProducts();
+        }
+
+        async function loadUsers() {
+            const aRes = await fetch(`${API}/artisans`), artisans = await aRes.json();
+            document.getElementById('select-artisan').innerHTML = artisans.map(a => `<option value="${a.artisan_id}">${a.name}</option>`).join('');
+            if (artisans.length) loadArtisanData();
+
+            const bRes = await fetch(`${API}/buyers`), buyers = await bRes.json();
+            document.getElementById('select-buyer').innerHTML = buyers.map(b => `<option value="${b.buyer_id}">${b.name}</option>`).join('');
+            if (buyers.length) loadBuyerData();
+        }
+
+        async function addArtisan() {
+            await fetch(`${API}/artisans`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name: aName.value, email: aEmail.value, phone: aPhone.value }) });
+            alert('Artisan saved!'); loadUsers();
+        }
+
+        async function addBuyer() {
+            await fetch(`${API}/buyers`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name: bName.value, email: bEmail.value, phone: bPhone.value }) });
+            alert('Buyer saved!'); loadUsers();
+        }
+
+        async function addProduct() {
+            const artisanId = document.getElementById('select-artisan').value;
+            await fetch(`${API}/products`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ artisan_id: artisanId, name: pName.value, description: pDesc.value, price: pPrice.value, stock: pStock.value }) });
+            alert('Product published!'); loadArtisanData();
+        }
+
+        async function loadArtisanData() {
+            const id = document.getElementById('select-artisan').value; if (!id) return;
+            const res = await fetch(`${API}/artisan/${id}`), data = await res.json();
+            document.getElementById('dash-name').innerText = data.artisan.name;
+            document.getElementById('artisan-orders').innerHTML = data.recentOrders.length ? data.recentOrders.map(o => `<li class="pt-2 flex justify-between"><span><b>${o.product_name}</b> (${o.buyer_name})</span><span class="font-bold">₹${o.total_amount}</span></li>`).join('') : '<p class="text-xs text-gray-500">No orders received.</p>';
+        }
+
+        async function loadProducts() {
+            const res = await fetch(`${API}/products`), products = await res.json();
+            document.getElementById('product-list').innerHTML = products.map(p => `
+                <div class="bg-white p-3 border border-gray-400 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-1"><h4 class="font-bold text-xs">${p.name}</h4><span class="bg-gray-200 border text-[10px] px-1">${p.artisan_name}</span></div>
+                        <p class="text-xs text-gray-600 mb-2">${p.description}</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t">
+                        <div><p class="text-[10px] text-gray-500">Stock: ${p.stock}</p><p class="font-bold text-xs">₹${p.price}</p></div>
+                        <button onclick="buyProduct(${p.product_id})" class="bg-gray-800 text-white text-xs px-2 py-1 hover:bg-black">Buy Now</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function buyProduct(productId) {
+            const buyerId = document.getElementById('select-buyer').value; if (!buyerId) return alert('Select a buyer account first');
+            await fetch(`${API}/orders`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ buyer_id: buyerId, product_id: productId, quantity: 1 }) });
+            alert('Order placed successfully!'); loadProducts(); loadBuyerData();
+        }
+
+        async function loadBuyerData() {
+            const id = document.getElementById('select-buyer').value; if (!id) return;
+            const res = await fetch(`${API}/buyer/${id}/orders`), orders = await res.json();
+            document.getElementById('buyer-orders').innerHTML = orders.length ? orders.map(o => `<li class="pt-2 flex justify-between"><span><b>${o.product_name}</b> (By: ${o.artisan_name})</span><span class="font-bold">₹${o.total_amount}</span></li>`).join('') : '<p class="text-xs text-gray-500">No orders placed.</p>';
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>
