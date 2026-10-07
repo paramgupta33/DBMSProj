@@ -2,7 +2,7 @@
 
 **KalaSetu** is a web-based marketplace platform designed to connect artisans with buyers, enabling artisans to showcase and sell their handcrafted products while providing buyers with a seamless shopping experience.
 
-![KalaSetu Platform](https://sarmaya.in/museum/wp-content/uploads/2025/06/2016_62_1_original_1-scaled.jpg)
+![KalaSetu Platform]
 
 ## 🌟 Features
 
