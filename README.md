@@ -250,8 +250,8 @@ For support, email support@kalasetu.com or create an issue in the repository.
 
 ## 👥 Authors
 
-- **KalaSetu Team** - Param Gupta
-                      Viyom Jain
+- **KalaSetu Team** - Param Gupta,
+                      Viyom Jain,
                       Param Jain
 
 ## 🙏 Acknowledgments
