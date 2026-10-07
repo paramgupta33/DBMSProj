@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-const dbConfig = { host: 'localhost', user: 'root', password: 'students', database: 'kalasetu_db' };
+const dbConfig = { host: 'localhost', user: 'USERNAME', password: 'PASSWORD', database: 'kalasetu_db' };
 let pool;
 
 async function initDB() {
@@ -134,6 +134,26 @@ app.post('/api/orders', async (req, res) => {
         await pool.query('INSERT INTO \`ORDER\` (buyer_id, product_id, quantity, order_date) VALUES (?, ?, ?, ?)', [buyer_id, product_id, quantity, date]);
         await pool.query('UPDATE PRODUCT SET stock = stock - ? WHERE product_id = ?', [quantity, product_id]);
         res.json({ message: 'Order placed' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/orders/:id', async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        // Get order details before deletion to restore stock
+        const [order] = await pool.query('SELECT product_id, quantity FROM \`ORDER\` WHERE order_id = ?', [orderId]);
+        if (order.length > 0) {
+            await pool.query('UPDATE PRODUCT SET stock = stock + ? WHERE product_id = ?', [order[0].quantity, order[0].product_id]);
+        }
+        await pool.query('DELETE FROM \`ORDER\` WHERE order_id = ?', [orderId]);
+        res.json({ message: 'Order deleted successfully' });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/artisan/:id/products', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM PRODUCT WHERE artisan_id = ?', [req.params.id]);
+        res.json(rows);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
